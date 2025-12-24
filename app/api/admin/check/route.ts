@@ -2,10 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 // Use service role for admin checks (bypasses RLS)
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Use service role for admin checks (bypasses RLS)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!serviceRoleKey) {
+    console.error('Missing SUPABASE_SERVICE_ROLE_KEY in environment variables');
+}
+
+const supabaseAdmin = serviceRoleKey
+    ? createClient(supabaseUrl, serviceRoleKey)
+    : null;
 
 export async function GET(request: NextRequest) {
     try {
@@ -19,10 +26,15 @@ export async function GET(request: NextRequest) {
             )
         }
 
+        if (!supabaseAdmin) {
+            console.error('Supabase Admin client not initialized');
+            return NextResponse.json({ isAdmin: false, error: 'Server configuration error' }, { status: 500 });
+        }
+
         const token = authHeader.replace('Bearer ', '')
 
         // Verify the JWT and get user info
-        const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token)
+        const { data: { user }, error: userError } = await supabaseAdmin!.auth.getUser(token)
 
         if (userError || !user) {
             return NextResponse.json(
@@ -41,7 +53,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Check if user email exists in admin_users table
-        const { data: adminUser, error: adminError } = await supabaseAdmin
+        const { data: adminUser, error: adminError } = await supabaseAdmin!
             .from('admin_users')
             .select('id, email, created_at')
             .eq('email', userEmail.toLowerCase())
@@ -86,7 +98,12 @@ export async function POST(request: NextRequest) {
         }
 
         const token = authHeader.replace('Bearer ', '')
-        const { data: { user } } = await supabaseAdmin.auth.getUser(token)
+
+        if (!supabaseAdmin) {
+            return NextResponse.json({ success: false, error: 'Server configuration error' }, { status: 500 });
+        }
+
+        const { data: { user } } = await supabaseAdmin!.auth.getUser(token)
 
         if (!user?.email) {
             return NextResponse.json(
@@ -96,7 +113,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Check if current user is admin
-        const { data: currentAdmin } = await supabaseAdmin
+        const { data: currentAdmin } = await supabaseAdmin!
             .from('admin_users')
             .select('email')
             .eq('email', user.email.toLowerCase())
@@ -121,7 +138,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Insert new admin
-        const { data: newAdmin, error: insertError } = await supabaseAdmin
+        const { data: newAdmin, error: insertError } = await supabaseAdmin!
             .from('admin_users')
             .insert({
                 email: email.toLowerCase().trim(),
@@ -167,7 +184,12 @@ export async function DELETE(request: NextRequest) {
         }
 
         const token = authHeader.replace('Bearer ', '')
-        const { data: { user } } = await supabaseAdmin.auth.getUser(token)
+
+        if (!supabaseAdmin) {
+            return NextResponse.json({ success: false, error: 'Server configuration error' }, { status: 500 });
+        }
+
+        const { data: { user } } = await supabaseAdmin!.auth.getUser(token)
 
         if (!user?.email) {
             return NextResponse.json(
@@ -177,7 +199,7 @@ export async function DELETE(request: NextRequest) {
         }
 
         // Check if current user is admin
-        const { data: currentAdmin } = await supabaseAdmin
+        const { data: currentAdmin } = await supabaseAdmin!
             .from('admin_users')
             .select('email')
             .eq('email', user.email.toLowerCase())
@@ -210,7 +232,7 @@ export async function DELETE(request: NextRequest) {
         }
 
         // Delete admin
-        const { error: deleteError } = await supabaseAdmin
+        const { error: deleteError } = await supabaseAdmin!
             .from('admin_users')
             .delete()
             .eq('email', emailToRemove.toLowerCase())

@@ -28,7 +28,7 @@ function isAllowedOrigin(origin: string | null): boolean {
 function corsHeaders(origin: string | null): HeadersInit {
   const headers: HeadersInit = {
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, PATCH',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-API-Key',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-API-Key, x-client-info, x-supabase-auth',
     'Access-Control-Max-Age': '86400', // 24 hours
     'Access-Control-Allow-Credentials': 'true',
   };

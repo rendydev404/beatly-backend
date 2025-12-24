@@ -2,10 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 // Use service role to check block status
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!serviceRoleKey) {
+    console.error('Missing SUPABASE_SERVICE_ROLE_KEY in environment variables');
+}
+
+const supabaseAdmin = serviceRoleKey
+    ? createClient(supabaseUrl, serviceRoleKey)
+    : null;
 
 // GET - Check if current user is blocked
 export async function GET(request: NextRequest) {
@@ -17,6 +23,12 @@ export async function GET(request: NextRequest) {
         }
 
         const token = authHeader.replace('Bearer ', '')
+
+        if (!supabaseAdmin) {
+            console.error('Supabase Admin client not initialized');
+            return NextResponse.json({ isBlocked: false });
+        }
+
         const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token)
 
         if (userError || !user) {
@@ -24,7 +36,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Check subscription for block status
-        const { data: subscription, error: subError } = await supabaseAdmin
+        const { data: subscription, error: subError } = await supabaseAdmin!
             .from('user_subscriptions')
             .select('is_blocked, blocked_until, block_reason')
             .eq('user_id', user.id)
@@ -46,7 +58,7 @@ export async function GET(request: NextRequest) {
 
             if (blockedUntil < now) {
                 // Block has expired - auto unblock
-                await supabaseAdmin
+                await supabaseAdmin!
                     .from('user_subscriptions')
                     .update({
                         is_blocked: false,

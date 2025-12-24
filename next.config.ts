@@ -13,18 +13,9 @@ const nextConfig: NextConfig = {
     },
 
     // Headers for API security and CORS
+    // Headers for API security and CORS
     async headers() {
         return [
-            // CORS headers for all API routes
-            {
-                source: '/api/:path*',
-                headers: [
-                    { key: 'Access-Control-Allow-Credentials', value: 'true' },
-                    { key: 'Access-Control-Allow-Methods', value: 'GET, POST, PUT, DELETE, OPTIONS, PATCH' },
-                    { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization, X-Requested-With, Accept, Origin' },
-                    { key: 'Access-Control-Max-Age', value: '86400' },
-                ],
-            },
             // Security headers for all routes
             {
                 source: '/:path*',
