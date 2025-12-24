@@ -6,7 +6,7 @@ Backend API server for Beatly music streaming platform.
 
 - **Framework**: Next.js 15 (App Router)
 - **Database**: Supabase
-- **Payment**: Midtrans, DOKU
+- **Payment**: Tripay
 - **AI**: Google Gemini
 - **External APIs**: Spotify, YouTube
 
@@ -58,7 +58,7 @@ npm start
 - `GET /api/spotify/*` - Spotify API proxy
 - `GET /api/youtube/*` - YouTube API proxy
 - `POST /api/doku/*` - DOKU payment gateway
-- `POST /api/midtrans/*` - Midtrans payment gateway
+
 - Dan lainnya...
 
 ## CORS Configuration
