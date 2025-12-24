@@ -1,0 +1,31 @@
+{
+    "name": "beatly-backend",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev -p 3001",
+        "build": "next build",
+        "start": "next start -p 3001",
+        "lint": "next lint"
+    },
+    "dependencies": {
+        "@google-analytics/data": "^5.2.0",
+        "@google/generative-ai": "^0.24.1",
+        "@supabase/supabase-js": "^2.86.0",
+        "midtrans-client": "^1.4.3",
+        "next": "15.3.6",
+        "nodemailer": "^7.0.11",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0"
+    },
+    "devDependencies": {
+        "@eslint/eslintrc": "^3",
+        "@types/node": "^20",
+        "@types/nodemailer": "^7.0.4",
+        "@types/react": "^19",
+        "@types/react-dom": "^19",
+        "eslint": "^9",
+        "eslint-config-next": "15.3.6",
+        "typescript": "^5"
+    }
+}
